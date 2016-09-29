@@ -27,8 +27,8 @@ class CallbackResource(object):
         'X-Line-Trusted-User-With-ACL': os.environ['LINE_CHANNEL_MID'],
     }
 
-    # docomo
-    user = {'t': 20}  # 20:kansai character
+    # docomo baby
+    user = {'t': 30}
     docomo_client = doco.client.Client(apikey=DOCOMO_API_KEY, user=user)
 
     def on_post(self, req, resp):
