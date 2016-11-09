@@ -14,7 +14,8 @@ handler.setLevel(DEBUG)
 logger.setLevel(DEBUG)
 logger.addHandler(handler)
 
-ENDPOINT_URI = 'https://trialbot-api.line.me/v1/events'
+# ENDPOINT_URI = 'https://trialbot-api.line.me/v1/events'
+ENDPOINT_URI = 'https://api.line.me/v2/bot/message/reply'
 DOCOMO_API_KEY = os.environ.get('DOCOMO_API_KEY', '')
 
 
@@ -22,9 +23,10 @@ class CallbackResource(object):
     # line
     header = {
         'Content-Type': 'application/json; charset=UTF-8',
-        'X-Line-ChannelID': os.environ['LINE_CHANNEL_ID'],
-        'X-Line-ChannelSecret': os.environ['LINE_CHANNEL_SECRET'],
-        'X-Line-Trusted-User-With-ACL': os.environ['LINE_CHANNEL_MID'],
+#        'X-Line-ChannelID': os.environ['LINE_CHANNEL_ID'],
+#        'X-Line-ChannelSecret': os.environ['LINE_CHANNEL_SECRET'],
+#        'X-Line-Trusted-User-With-ACL': os.environ['LINE_CHANNEL_MID'],
+        'Authorization': 'Bearer {}'.format(os.environ['LINE_CHANNEL_ACCESS_TOKEN'])
     }
 
     # docomo baby
