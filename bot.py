@@ -33,23 +33,25 @@ class CallbackResource(object):
     user = {'t': 30}
     docomo_client = doco.client.Client(apikey=DOCOMO_API_KEY, user=user)
 
-    def on_post(self, req, resp):
 
-        body = req.stream.read()
-        if not body:
-            raise falcon.HTTPBadRequest('Empty request body',
-                                        'A valid JSON document is required.')
+def on_post(self, req, resp):
+    body = req.stream.read()
+    if not body:
+        raise falcon.HTTPBadRequest('Empty request body',
+                                    'A valid JSON document is required.')
 
-        receive_params = json.loads(body.decode('utf-8'))
-        logger.debug('receive_params: {}'.format(receive_params))
+    receive_params = json.loads(body.decode('utf-8'))
+    logger.debug('receive_params: {}'.format(receive_params))
 
-        for msg in receive_params['result']:
+    for event in receive_params['events']:
 
-            logger.debug('msg: {}'.format(msg))
+        logger.debug('event: {}'.format(event))
 
+        if event['type'] == 'message':
             try:
+                user_utt = event['message']['text']
                 docomo_res = self.docomo_client.send(
-                    utt=msg['content']['text'], apiname='Dialogue')
+                    utt=user_utt, apiname='Dialogue')
 
             except Exception:
                 raise falcon.HTTPError(falcon.HTTP_503,
@@ -57,16 +59,17 @@ class CallbackResource(object):
                                        'Could not invoke docomo api.')
 
             logger.debug('docomo_res: {}'.format(docomo_res))
+            sys_utt = docomo_res['utt']
 
             send_content = {
-                'to': [msg['content']['from']],
-                'toChannel': 1383378250,  # Fixed value
-                'eventType': '138311608800106203',  # Fixed value
-                'content': {
-                    'contentType': 1,
-                    'toType': 1,
-                    'text': docomo_res['utt'],
-                },
+                'replyToken': event['replyToken'],
+                'messages': [
+                    {
+                        'type': 'text',
+                        'text': sys_utt
+                    }
+
+                ]
             }
             send_content = json.dumps(send_content)
             logger.debug('send_content: {}'.format(send_content))
@@ -75,7 +78,6 @@ class CallbackResource(object):
             logger.debug('res: {} {}'.format(res.status_code, res.reason))
 
             resp.body = json.dumps('OK')
-
 
 api = falcon.API()
 api.add_route('/callback', CallbackResource())
